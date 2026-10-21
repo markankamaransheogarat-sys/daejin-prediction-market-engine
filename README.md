@@ -1,144 +1,73 @@
-# Daejin Prediction Market Simulator & Mathematical Deep Dive ⚡️
-### Superteam Earn Bounty: *"Launch & Trade on Daejin: Write a Twitter Thread and Create a Market"*
-**Prize Pool:** $620 USDC (1st: $200 | 2nd: $150 | 3rd: $110 | 4th: $90 | 5th: $70)  
-**Sponsor:** Daejin (`@Daejinxyz`) & Superteam (`@Superteam`)  
-**Live Interactive Simulator:** [https://markankamaransheogarat-sys.github.io/daejin-prediction-market-engine/](https://markankamaransheogarat-sys.github.io/daejin-prediction-market-engine/)  
-**GitHub Repository:** [https://github.com/markankamaransheogarat-sys/daejin-prediction-market-engine](https://github.com/markankamaransheogarat-sys/daejin-prediction-market-engine)  
-**Author / Contributor:** `@markankamaransheogarat-sys`  
+# Daejin, explained
 
----
+An independent, interactive explainer of [Daejin](https://www.daejin.xyz/prediction) prediction markets, written for the
+Superteam Earn bounty *Launch & Trade on Daejin: Write a Twitter Thread and Create a Market*. Not affiliated with Daejin.
 
-## 🎯 Executive Summary & Mission
-Prediction markets are the internet's most accurate consensus mechanism. However, legacy orderbook-based markets (Polymarket on Polygon, Augur on Ethereum) suffer from:
-1. **Severe Cold-Start Illiquidity:** New markets have 0 volume unless paid market makers quote wide, predatory spreads.
-2. **Slow Settlement & High Gas:** Waiting minutes for L2 state transitions and paying substantial fees.
+**Live:** https://markankamaransheogarat-sys.github.io/daejin-prediction-market-engine/
 
-**Daejin (`daejin.xyz`)** re-engineers prediction markets for Solana through **Creator-Owned Shared-Pools**:
-- **0% Market-Maker Spread:** Traders do not trade against a market maker; they pool conviction against each other.
-- **Sub-Second Solana Execution (~400ms):** Instant position deposits and real-time odds adjustment.
-- **Permissionless Creation:** Any creator can spin up a market with clear resolution criteria and seed liquidity.
+## What's on the page
 
----
+| Tab | What it shows |
+| --- | --- |
+| How it works | A payout calculator: pick a YES price, a side and an amount, see shares, payout if right, if wrong and if voided. |
+| My trade | The position taken for the bounty and the data behind it. |
+| My market | The market launched for the bounty: question, proof source, timing, edge cases and why it is built that way. |
+| Thread | The thread, post by post, each under 280 characters, with copy buttons and screenshot slots. |
 
-## 📐 How Shared-Pool Markets Work: The Mathematical Engine
+## How a Daejin market works
 
-In Daejin, every market consists of two segregated conviction pools:
-$$\text{Pool}_{\text{YES}} \quad \text{and} \quad \text{Pool}_{\text{NO}}$$
+Source: [daejin.xyz/risk-and-rules](https://www.daejin.xyz/risk-and-rules), last updated Sep 25, 2026.
 
-### 1. Dynamic Price & Probability Formation:
-The probability (and implied token price between \$0.00 and \$1.00) is determined strictly by the ratio of deposited capital:
-$$P(\text{YES}) = \frac{\text{Pool}_{\text{YES}}}{\text{Pool}_{\text{YES}} + \text{Pool}_{\text{NO}}}$$
-$$P(\text{NO}) = \frac{\text{Pool}_{\text{NO}}}{\text{Pool}_{\text{YES}} + \text{Pool}_{\text{NO}}}$$
+- Every market is one YES/NO question with a close time and a resolution source declared up front.
+- One YES share plus one NO share are always worth exactly 1 USDC, so a share's price (0.01 to 0.99) is the market's
+  implied probability.
+- A winning share redeems for 1 USDC, a losing share for 0. Every share is fully backed by USDC locked in the market's
+  contract, so the losing side's money is what pays the winners.
+- Fees: 0% on buying, selling or losing; 2% of realised profit on a winning exit.
+- A voided market redeems every share at 0.5 USDC.
 
-### 2. Proportional Pool-Splitting at Resolution:
-When a market resolves via verifiable on-chain evidence, winning predictors split the **entire combined pool** proportionally to their contribution to the winning side:
-$$\text{Payout} = \text{Total Pool} \times \left( \frac{\text{User Deposit}}{\text{Winning Pool}} \right)$$
-
-*Example:*  
-If Pool_YES has \$3,200 and Pool_NO has \$1,800 (Total Pool = \$5,000; YES = 64%).  
-If a user deposits \$50 on YES and YES wins, the user receives their exact proportional share of the entire \$5,050 pool, capturing the entire \$1,800 loser pool without middleman take-rates.
-
----
-
-## 📊 My Position & Thesis ($50 USDC on YES)
-* **Market:** *"Will Solana Firedancer Process Over 50,000 Mainnet TPS Before Q1 2027?"*
-* **Stake:** **$50.00 USDC** on **YES**
-* **Data-Backed Thesis:**
-  1. Jump Crypto's C++ validator client (*Firedancer*) demonstrated 1.08M raw TPS in lab hardware benchmarks.
-  2. *Frankendancer* (Firedancer networking + Rust execution) is already active on Solana mainnet with zero consensus breaks.
-  3. The current market price of $0.64 implies a 64% probability. Given Solana's hardware scaling roadmap and validator adoption speed, taking YES offers an asymmetric +56% net ROI on capital.
-
----
-
-## 🛠 My Created Market on Daejin
-* **Question:** *"Will Solana Firedancer Process Over 50,000 Mainnet TPS Before Q1 2027?"*
-* **Category:** Crypto Infrastructure & L1s
-* **Resolution Proof Source:** Blockworks Research Solana Validator Dashboard (`https://blockworks.co/research`) & Solana Foundation Official TPS Metrics.
-* **Resolution Date:** `2027-03-31`
-* **Seed Liquidity:** $100 USDC ($50 YES / $50 NO) deposited to jumpstart community trading.
-
----
-
-## 🧵 The Full 7-Tweet Viral Thread
-
-The complete Twitter thread is published below and available to copy with 1-click in the live simulator:
-
-```markdown
-1/ Prediction markets are eating the world, but orderbooks on Ethereum & Polygon are still clunky, illiquid, and dominated by market-making bots.
-
-Enter @Daejinxyz — the creator-owned prediction market network built on Solana and part of the @Superteam ecosystem ⚡️
-
-Here is how shared-pools work, why it changes everything, and my first live trade: 🧵👇
-
-2/ How does Daejin actually work in plain English?
-
-Unlike legacy exchanges where you wait for a counterparty on an orderbook, Daejin uses shared-pools (pari-mutuel conviction pools).
-
-There are two pools: Pool_YES and Pool_NO.
-Prices reflect the crowd's conviction:
-P(YES) = Pool_YES / (Pool_YES + Pool_NO)
-
-If 3,000 USDC is in YES and 1,000 USDC is in NO, YES trades at $0.75 (75% probability). Zero market-maker spread!
-
-3/ The Math: How winners split the pool 💰
-
-When the market resolves, the winners split the ENTIRE combined pool in direct proportion to their stake:
-
-Payout = Total_Pool * (Your_Deposit / Winning_Pool)
-
-If you placed $50 on a 25% underdog and it resolves YES, you don't just win a fixed yield — you split the entire loser pool with other winning predictors. Maximum capital efficiency.
-
-4/ Taking my position ($50 USDC on YES) 📊
-
-I put $50 on "Solana Firedancer Mainnet TPS > 50,000 before Q1 2027".
-
-The thesis:
-• Jump Crypto's Firedancer testnet already clocked 1.0M+ raw TPS in laboratory conditions.
-• Frankendancer is already live on mainnet validating consensus.
-• The current market implies a 64% probability. At these odds, taking YES provides asymmetric risk-to-reward on Solana's scaling curve.
-
-5/ Creating my own market on @Daejinxyz (Free & Permissionless) 🛠
-
-Anyone can become a market architect. I launched:
-"Will Solana Firedancer Process Over 50,000 Mainnet TPS Before Q1 2027?"
-
-• Verifiable Proof Source: Blockworks Research Solana Validator Dashboard & Solana Foundation Official TPS Metrics.
-• Resolution Date: 2027-03-31
-• Seeded with initial liquidity to jumpstart community trading.
-
-6/ Why @Daejinxyz on Solana is a 100x improvement over legacy rails:
-
-⚡️ Sub-second settlement (~400 ms)
-💸 Fractions of a cent in gas fees ($0.0005)
-🔒 100% On-chain evidence-based resolution — no centralized editorial fiat
-🌐 Creator ownership — creators launch markets on any real-world topic and build liquidity
-
-7/ Prediction markets are the purest truth engine on Earth.
-
-You can try Daejin today with just $5:
-1. Connect your Phantom / Solflare wallet at https://daejin.xyz
-2. Pick an outcome or launch your own market for free.
-
-Built on Solana with @Superteam and powered by @Daejinxyz.
-
-Let's see what the crowd's conviction is! 🚀
+```
+shares       = amount / price
+if right     = shares x 1 USDC - 2% x (shares - amount)
+if wrong     = 0
 ```
 
----
+Example: 5 USDC on NO at 0.50 buys 10 shares. If NO wins: 10 - 2% x 5 = 9.90 USDC. If YES wins: 0.
 
-## 💻 Tech Stack & Local Setup
-- **Framework:** React 19, TypeScript, Vite
-- **Styling:** Tailwind CSS v4
-- **Icons:** Lucide Icons
-- **Deployment:** GitHub Pages
+## My trade
+
+NO on [Will Solana (SOL) outperform Bitcoin (BTC) in October 2026?](https://www.daejin.xyz/prediction/6ad3bf0e94731a0a263f87ce)
+(resolves on CoinGecko USD prices, Oct 1 vs Nov 1, 2026).
+
+| | Oct 1 | Oct 21 | Change |
+| --- | ---: | ---: | ---: |
+| SOL | $118.04 | $108.26 | -8.3% |
+| BTC | $83,576 | $84,496 | +1.1% |
+
+SOL is 9.4 points behind with about 10 days left; for YES it has to gain ~10% on BTC. Over the last 90 days the daily
+standard deviation of log(SOL/BTC) was ~1.7% (Binance daily closes), so a driftless random walk gives YES ~4%. Fat tails
+push that higher, but not to the 50% the market was pricing.
+
+## My market
+
+**Will SOL close above $110 on Binance (SOL/USDT daily candle) on November 30, 2026?**
+
+- Proof source: Binance SOL/USDT 1D candle close for Nov 30, 2026 (UTC); fallback CoinGecko SOL/USD at Dec 1 00:00 UTC.
+- "Above" is strict: $110.00 resolves NO. Intraday highs, perpetuals and other exchanges do not count.
+- $110 is ~2% above spot at launch, so the market opens near 50/50; ~40 days to resolution.
+
+All numbers on the page live in [`app/src/data.ts`](app/src/data.ts), the thread in [`app/src/thread.ts`](app/src/thread.ts).
+
+## Run locally
 
 ```bash
 cd app
-bun install
-bun run dev
+npm install
+npm run dev
 ```
 
----
+Deploy: `npm run build`, then publish `app/dist` to the `gh-pages` branch.
 
-## 📄 License
-MIT © 2026 `markankamaransheogarat-sys` • Superteam Earn Bounty
+## License
+
+MIT

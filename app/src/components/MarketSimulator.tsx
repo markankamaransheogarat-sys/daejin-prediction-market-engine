@@ -1,159 +1,88 @@
 import React, { useState } from 'react';
-import { 
-  TrendingUp, 
-  ArrowRight, 
-  CheckCircle2, 
-  DollarSign, 
-  Percent, 
-  ShieldCheck, 
-  Zap,
-  Info
-} from 'lucide-react';
+import { TrendingUp, Coins, Info } from 'lucide-react';
+import { FEES, SOURCES, payout } from '../data';
+
+const usd = (n: number) => `$${n.toFixed(2)}`;
 
 export const MarketSimulator: React.FC = () => {
-  const [yesPool, setYesPool] = useState<number>(3200);
-  const [noPool, setNoPool] = useState<number>(1800);
-  const [betSide, setBetSide] = useState<'YES' | 'NO'>('YES');
-  const [betAmount, setBetAmount] = useState<number>(50);
-  const [recentTx, setRecentTx] = useState<string | null>(null);
+  const [yesCents, setYesCents] = useState<number>(30);
+  const [side, setSide] = useState<'YES' | 'NO'>('YES');
+  const [stake, setStake] = useState<number>(5);
 
-  const totalPool = yesPool + noPool;
-  const currentYesProb = Math.round((yesPool / totalPool) * 100);
-  const currentNoProb = 100 - currentYesProb;
-  const currentYesPrice = (yesPool / totalPool).toFixed(3);
-  const currentNoPrice = (noPool / totalPool).toFixed(3);
-
-  // Simulated trade impact
-  const simYesPool = betSide === 'YES' ? yesPool + betAmount : yesPool;
-  const simNoPool = betSide === 'NO' ? noPool + betAmount : noPool;
-  const simTotal = simYesPool + simNoPool;
-  const newProb = betSide === 'YES' 
-    ? Math.round((simYesPool / simTotal) * 100) 
-    : Math.round((simNoPool / simTotal) * 100);
-
-  // Payout calculation in shared-pool (pari-mutuel / winner splits total pool proportionally)
-  const winningPool = betSide === 'YES' ? simYesPool : simNoPool;
-  const userShareOfWinning = betAmount / winningPool;
-  const potentialPayout = (simTotal * userShareOfWinning).toFixed(2);
-  const potentialRoi = (((parseFloat(potentialPayout) - betAmount) / betAmount) * 100).toFixed(1);
-
-  const handleExecuteTrade = () => {
-    if (betSide === 'YES') {
-      setYesPool(prev => prev + betAmount);
-    } else {
-      setNoPool(prev => prev + betAmount);
-    }
-
-    const chars = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
-    let tx = '';
-    for (let i = 0; i < 44; i++) {
-      tx += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    setRecentTx(tx);
-    setTimeout(() => setRecentTx(null), 5000);
-  };
+  const noCents = 100 - yesCents;
+  const price = (side === 'YES' ? yesCents : noCents) / 100;
+  const p = payout(stake, price);
 
   return (
     <div className="space-y-6">
-      {/* Featured Market Banner */}
-      <div className="p-6 rounded-2xl bg-gradient-to-r from-indigo-950/80 via-slate-900 to-slate-900 border border-indigo-500/30 shadow-2xl">
-        <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
-          <span className="text-xs font-mono font-bold px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/40">
-            Daejin Featured Market
-          </span>
-          <span className="text-xs text-slate-400">Resolves: Q1 2027 • Verified On-Chain</span>
-        </div>
-        <h2 className="text-2xl font-black text-white mb-2">
-          Will Solana Firedancer Process &gt;50,000 Mainnet TPS Before Q1 2027?
-        </h2>
-        <p className="text-sm text-slate-300 max-w-2xl leading-relaxed">
-          Creator: <span className="text-indigo-400 font-mono font-semibold">@jarvis-quant-agent</span> • Resolution Source: Blockworks Research Solana Validator Dashboard & Official Foundation Metrics.
+      <div className="p-6 rounded-2xl bg-gradient-to-r from-indigo-950/80 via-slate-900 to-slate-900 border border-indigo-500/30 shadow-2xl space-y-4">
+        <span className="text-xs font-mono font-bold px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/40">
+          How a Daejin market prices an outcome
+        </span>
+        <h2 className="text-2xl font-black text-white">1 YES share + 1 NO share = $1. The price is the probability.</h2>
+        <p className="text-sm text-slate-300 max-w-3xl leading-relaxed">
+          Drag the slider to set where traders have pushed the YES price. Buying YES pushes it up, buying NO pushes it
+          down. Nobody sets the odds; the crowd does.
         </p>
 
-        {/* Live Probability Bar */}
-        <div className="mt-6 space-y-2">
-          <div className="flex justify-between text-xs font-bold">
-            <span className="text-emerald-400">YES {currentYesProb}% (${currentYesPrice})</span>
-            <span className="text-slate-400">Total Pool: ${totalPool.toLocaleString()} USDC</span>
-            <span className="text-rose-400">NO {currentNoProb}% (${currentNoPrice})</span>
+        <div className="space-y-2">
+          <div className="flex justify-between text-sm font-bold">
+            <span className="text-emerald-400">YES {yesCents}¢ = {yesCents}% chance</span>
+            <span className="text-rose-400">NO {noCents}¢ = {noCents}% chance</span>
           </div>
           <div className="h-4 w-full bg-slate-800 rounded-full overflow-hidden flex p-0.5 border border-slate-700">
-            <div 
-              className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-l-full transition-all duration-500"
-              style={{ width: `${currentYesProb}%` }}
-            />
-            <div 
-              className="h-full bg-gradient-to-r from-rose-500 to-pink-500 rounded-r-full transition-all duration-500"
-              style={{ width: `${currentNoProb}%` }}
-            />
+            <div className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-l-full" style={{ width: `${yesCents}%` }} />
+            <div className="h-full bg-gradient-to-r from-rose-500 to-pink-500 rounded-r-full" style={{ width: `${noCents}%` }} />
           </div>
+          <input
+            type="range"
+            min={1}
+            max={99}
+            value={yesCents}
+            onChange={(e) => setYesCents(Number(e.target.value))}
+            aria-label="YES price in cents"
+            className="w-full accent-indigo-500"
+          />
         </div>
       </div>
 
-      {recentTx && (
-        <div className="p-4 bg-emerald-950/60 border border-emerald-500/40 rounded-xl text-emerald-300 text-xs flex items-center justify-between animate-fade-in">
-          <div className="flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-            <span>Position executed on Solana! <strong>+${betAmount} USDC</strong> deposited to {betSide} pool.</span>
-          </div>
-          <span className="font-mono text-[11px] text-slate-400">TX: {recentTx.slice(0, 12)}...</span>
-        </div>
-      )}
-
-      {/* Trade Configuration & Math Breakdown */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Trade Control */}
         <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl space-y-5">
           <h3 className="text-lg font-bold text-white flex items-center gap-2">
             <TrendingUp className="w-5 h-5 text-indigo-400" />
-            <span>Take a Position</span>
+            <span>Your position</span>
           </h3>
 
-          <div>
-            <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
-              Select Outcome
-            </label>
-            <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-3">
+            {(['YES', 'NO'] as const).map((s) => (
               <button
+                key={s}
                 type="button"
-                onClick={() => setBetSide('YES')}
+                onClick={() => setSide(s)}
+                aria-pressed={side === s}
                 className={`py-3 rounded-xl font-bold text-sm transition-all border ${
-                  betSide === 'YES'
-                    ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400 shadow-lg shadow-emerald-500/10'
+                  side === s
+                    ? s === 'YES'
+                      ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400'
+                      : 'bg-rose-500/20 border-rose-500 text-rose-400'
                     : 'bg-slate-800/80 border-slate-700 text-slate-400 hover:text-white'
                 }`}
               >
-                YES ({(yesPool / totalPool).toFixed(3)} USDC)
+                Buy {s} at {s === 'YES' ? yesCents : noCents}¢
               </button>
-              <button
-                type="button"
-                onClick={() => setBetSide('NO')}
-                className={`py-3 rounded-xl font-bold text-sm transition-all border ${
-                  betSide === 'NO'
-                    ? 'bg-rose-500/20 border-rose-500 text-rose-400 shadow-lg shadow-rose-500/10'
-                    : 'bg-slate-800/80 border-slate-700 text-slate-400 hover:text-white'
-                }`}
-              >
-                NO ({(noPool / totalPool).toFixed(3)} USDC)
-              </button>
-            </div>
+            ))}
           </div>
 
           <div>
-            <div className="flex justify-between text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
-              <span>Position Size (USDC)</span>
-              <span className="text-slate-300">Min $5 (Bounty Requirement)</span>
-            </div>
+            <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Amount (USDC)</div>
             <div className="flex gap-2">
-              {[5, 20, 50, 100, 250].map((amt) => (
+              {[5, 10, 25, 100].map((amt) => (
                 <button
                   key={amt}
                   type="button"
-                  onClick={() => setBetAmount(amt)}
+                  onClick={() => setStake(amt)}
                   className={`flex-1 py-1.5 rounded-lg text-xs font-bold border transition-colors ${
-                    betAmount === amt
-                      ? 'bg-indigo-600 text-white border-indigo-500'
-                      : 'bg-slate-800 text-slate-400 border-slate-700 hover:text-white'
+                    stake === amt ? 'bg-indigo-600 text-white border-indigo-500' : 'bg-slate-800 text-slate-400 border-slate-700 hover:text-white'
                   }`}
                 >
                   ${amt}
@@ -162,53 +91,67 @@ export const MarketSimulator: React.FC = () => {
             </div>
             <input
               type="number"
-              min="5"
-              step="5"
-              value={betAmount}
-              onChange={(e) => setBetAmount(Math.max(5, parseFloat(e.target.value) || 5))}
+              min={1}
+              value={stake}
+              onChange={(e) => setStake(Math.max(1, Number(e.target.value) || 1))}
               className="mt-3 w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-indigo-500 font-mono"
             />
           </div>
 
-          <button
-            onClick={handleExecuteTrade}
-            className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-indigo-500/25 transition-all flex items-center justify-center gap-2"
-          >
-            <span>Confirm ${betAmount} Position on {betSide}</span>
-            <ArrowRight className="w-4 h-4" />
-          </button>
+          <div className="p-4 bg-slate-950 rounded-xl border border-slate-800 text-xs font-mono text-slate-300 space-y-1">
+            <div>
+              {usd(stake)} / {price.toFixed(2)} per share = <span className="text-white font-bold">{p.shares.toFixed(2)} shares</span>
+            </div>
+            <div className="text-slate-500">Each winning share redeems for $1. Each losing share for $0.</div>
+          </div>
         </div>
 
-        {/* Shared-Pool Math Visualizer */}
         <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl space-y-4">
           <h3 className="text-lg font-bold text-white flex items-center gap-2">
-            <Zap className="w-5 h-5 text-indigo-400" />
-            <span>Shared-Pool Math & Payout Engine</span>
+            <Coins className="w-5 h-5 text-indigo-400" />
+            <span>What you get back</span>
           </h3>
 
-          <div className="grid grid-cols-2 gap-3 text-xs">
-            <div className="p-3.5 bg-slate-800/60 rounded-xl border border-slate-700">
-              <span className="text-slate-400 block mb-1">New Outcome Probability</span>
-              <span className="text-xl font-black text-white">{newProb}%</span>
-              <span className="text-[10px] text-indigo-400 block mt-0.5">Moves by {Math.abs(newProb - (betSide === 'YES' ? currentYesProb : currentNoProb))}%</span>
+          <div className="grid grid-cols-3 gap-3 text-xs">
+            <div className="p-3.5 bg-emerald-500/10 rounded-xl border border-emerald-500/30">
+              <span className="text-slate-400 block mb-1">{side} wins</span>
+              <span className="text-xl font-black text-emerald-400">{usd(p.win)}</span>
+              <span className="text-[10px] text-emerald-400/80 block mt-0.5">+{usd(p.winProfit)} after fee</span>
             </div>
-
+            <div className="p-3.5 bg-rose-500/10 rounded-xl border border-rose-500/30">
+              <span className="text-slate-400 block mb-1">{side} loses</span>
+              <span className="text-xl font-black text-rose-400">{usd(p.lose)}</span>
+              <span className="text-[10px] text-rose-400/80 block mt-0.5">max loss {usd(stake)}</span>
+            </div>
             <div className="p-3.5 bg-slate-800/60 rounded-xl border border-slate-700">
-              <span className="text-slate-400 block mb-1">Potential Payout</span>
-              <span className="text-xl font-black text-emerald-400">${potentialPayout}</span>
-              <span className="text-[10px] text-emerald-400/80 block mt-0.5">+{potentialRoi}% net profit</span>
+              <span className="text-slate-400 block mb-1">Voided</span>
+              <span className="text-xl font-black text-white">{usd(p.void)}</span>
+              <span className="text-[10px] text-slate-400 block mt-0.5">{FEES.voidPayout * 100}¢ per share</span>
             </div>
           </div>
 
           <div className="p-4 bg-slate-950 rounded-xl border border-slate-800 space-y-2 text-xs font-mono text-slate-300">
-            <div className="text-indigo-400 font-bold">// How Winners Split the Pool</div>
-            <div>User Share: {betAmount} / {winningPool} = {(userShareOfWinning * 100).toFixed(2)}%</div>
-            <div>Total Pool Post-Trade: ${simTotal.toLocaleString()} USDC</div>
-            <div>Formula: Payout = Total_Pool * (User_Deposit / Winning_Pool)</div>
+            <div className="text-indigo-400 font-bold">// Where the winnings come from</div>
+            <div>Every YES/NO pair is backed by $1 USDC locked in the market's shared pool.</div>
+            <div>At resolution the pool pays $1 per winning share: the losing side's money pays the winners.</div>
+            <div>
+              Fee: {FEES.profitFee * 100}% of profit, only on a winning exit ({usd(p.fee)} here). 0% on buying, selling or losing.
+            </div>
             <div className="text-slate-400 text-[11px] pt-1 border-t border-slate-800">
-              In Daejin shared-pools, you don't trade against a market maker spread. You split the loser pool directly with other winning predictors.
+              You can also sell before close at the current price, which may be higher or lower than what you paid.
             </div>
           </div>
+
+          <p className="text-[11px] text-slate-500 flex items-start gap-1.5">
+            <Info className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+            <span>
+              Mechanics and fees from Daejin's{' '}
+              <a href={SOURCES.rules} target="_blank" rel="noreferrer" className="text-indigo-400 hover:text-indigo-300 underline">
+                Risk &amp; Rules
+              </a>{' '}
+              page (Sep 25, 2026). This calculator is an independent explainer, not part of Daejin.
+            </span>
+          </p>
         </div>
       </div>
     </div>
